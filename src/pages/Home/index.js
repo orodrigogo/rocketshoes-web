@@ -1,9 +1,11 @@
 import React, { Component  } from 'react';
 import { connect } from 'react-redux'; // para conectar o noss componente com o estado d oredux.
+import { bindActionCreators } from 'redux';
 import { MdAddShoppingCart } from 'react-icons/md';
 import { formatPrice } from '../../utils/format';
 import api from '../../services/api';
 
+import * as CartActions from '../../store/modules/cart/actions';
 import { ProductList } from './styles';
 
  class Home extends Component {
@@ -22,18 +24,16 @@ import { ProductList } from './styles';
     this.setState({ products: data });
   }
 
- handleAddProduct = product => {
+ handleAddProduct = id => {
    // dispatch dispara uma action ao redux.
-   const { dispatch } = this.props;
+   const { addToCartRequest } = this.props;
 
-   dispatch({
-     type: 'ADD_TO_CART',
-     product,
-   });
+   addToCartRequest(id);
  }
 
   render(){
     const { products } = this.state;
+    const { amount } = this.props;
     return(
       <ProductList>
       { products.map(product =>(
@@ -42,9 +42,9 @@ import { ProductList } from './styles';
           <strong>{product.title}</strong>
           <label>{product.priceFormatted}</label>
 
-          <button type="button" onClick={() => this.handleAddProduct(product)}>
+          <button type="button" onClick={() => this.handleAddProduct(product.id)}>
             <div>
-              <MdAddShoppingCart size={16} color="#FFF" /> 3
+              <MdAddShoppingCart size={16} color="#FFF" /> {amount[product.id] || 0}
             </div>
             <span>ADICIONAR AO CARRINHO</span>
           </button>
@@ -55,6 +55,17 @@ import { ProductList } from './styles';
   }
 }
 
+const mapStateToProps = state => ({
+  amount: state.cart.reduce((amount, product) => {
+    amount[product.id] = product.amount;
+
+    return amount;
+  }, {}),
+});
+
+//Converte actions em propriedades de componentes.
+const mapDispatchToProps = dispatch =>
+  bindActionCreators(CartActions, dispatch);
 
 // usando o redux.
-export default connect()(Home);
+export default connect(mapStateToProps, mapDispatchToProps)(Home);
