@@ -29,6 +29,7 @@ import { ProductList } from './styles';
    const { addToCartRequest } = this.props;
 
    addToCartRequest(id);
+
  }
 
   render(){
